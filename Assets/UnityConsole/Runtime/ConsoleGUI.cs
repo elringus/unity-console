@@ -1,0 +1,90 @@
+﻿using UnityEngine;
+using System.Linq;
+using System;
+
+namespace UnityConsole
+{
+    public class ConsoleGUI : MonoBehaviour
+    {
+        public static KeyCode ToggleKey { get; set; } = KeyCode.BackQuote;
+
+        private const int height = 25;
+        private const int buttonWidth = 100;
+        private const string inputControlName = "input";
+        private static char[] separator = new[] { ' ' };
+        private static GUIStyle style;
+        private static bool isVisible;
+        private static bool setFocusPending;
+        private static string input;
+
+        public static void Show () => isVisible = true;
+
+        public static void Hide () => isVisible = false;
+
+        public static void Toggle () => isVisible = !isVisible;
+
+        private void Awake ()
+        {
+            style = new GUIStyle {
+                normal = new GUIStyleState { background = Texture2D.whiteTexture, textColor = Color.white },
+                contentOffset = new Vector2(5, 5),
+            };
+        }
+
+        private void Update ()
+        {
+            if (Application.isPlaying && Input.GetKeyUp(ToggleKey))
+            {
+                Toggle();
+                setFocusPending = true;
+            }
+        }
+
+        private void OnGUI ()
+        {
+            if (!isVisible) return;
+
+            GUI.backgroundColor = new Color(0, 0, 0, .65f);
+
+            GUI.SetNextControlName(inputControlName);
+            input = GUI.TextField(new Rect(0, 0, Screen.width - 125, height), input, style);
+            if (GUI.Button(new Rect(Screen.width - 125, 0, 75, height), "EXECUTE", style)) ExecuteInput();
+            if (GUI.Button(new Rect(Screen.width - 050, 0, 50, height), "HIDE", style)) Hide();
+
+            if (setFocusPending)
+            {
+                GUI.FocusControl(inputControlName);
+                setFocusPending = false;
+            }
+
+            if (Event.current.isKey && Event.current.keyCode == KeyCode.Return && GUI.GetNameOfFocusedControl() == inputControlName)
+            {
+                ExecuteInput();
+                Hide();
+            }
+        }
+
+        private void OnApplicationQuit () => Hide();
+
+        private void ExecuteInput ()
+        {
+            if (string.IsNullOrWhiteSpace(input)) return;
+
+            var command = input.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+            if (command == null || command.Length == 0) return;
+            if (command.Length == 1) CommandDatabase.ExecuteCommand(command[0]);
+            else CommandDatabase.ExecuteCommand(command[0], command.ToList().GetRange(1, command.Length - 1).ToArray());
+        }
+
+        #if CONSOLE_ENABLED
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        private static void Initialize ()
+        {
+            var hostObject = new GameObject("UnityConsole");
+            hostObject.hideFlags = HideFlags.HideAndDontSave;
+            DontDestroyOnLoad(hostObject);
+            hostObject.AddComponent<ConsoleGUI>();
+        }
+        #endif
+    }
+}
