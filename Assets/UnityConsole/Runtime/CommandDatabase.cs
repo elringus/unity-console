@@ -39,7 +39,7 @@ namespace UnityConsole
                 .SelectMany(assembly => assembly.GetExportedTypes())
                 .SelectMany(type => type.GetMethods(BindingFlags.Static | BindingFlags.Public))
                 .Where(method => method.GetCustomAttribute<CommandAttribute>() != null)
-                .ToDictionary(method => method.Name, StringComparer.OrdinalIgnoreCase);
+                .ToDictionary(method => method.GetCustomAttribute<CommandAttribute>().Alias ?? method.Name, StringComparer.OrdinalIgnoreCase);
         }
         #endif
     }

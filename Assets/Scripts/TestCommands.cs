@@ -2,7 +2,7 @@
 
 public static class TestCommands
 {
-    [UnityConsole.Command]
+    [UnityConsole.Command("hello")]
     public static void PrintHelloWorld () => Debug.Log("Hello World!");
 
     [UnityConsole.Command]
