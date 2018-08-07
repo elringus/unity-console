@@ -33,7 +33,7 @@ namespace UnityConsole
 
         private void Update ()
         {
-            if (Application.isPlaying && Input.GetKeyUp(ToggleKey))
+            if (!isVisible && Application.isPlaying && Input.GetKeyUp(ToggleKey))
             {
                 Toggle();
                 setFocusPending = true;
@@ -43,6 +43,12 @@ namespace UnityConsole
         private void OnGUI ()
         {
             if (!isVisible) return;
+
+            if (Event.current.isKey && Event.current.keyCode == ToggleKey)
+            {
+                Hide();
+                return;
+            }
 
             GUI.backgroundColor = new Color(0, 0, 0, .65f);
 
@@ -60,7 +66,7 @@ namespace UnityConsole
             if (Event.current.isKey && Event.current.keyCode == KeyCode.Return && GUI.GetNameOfFocusedControl() == inputControlName)
             {
                 ExecuteInput();
-                Hide();
+                input = string.Empty;
             }
         }
 
