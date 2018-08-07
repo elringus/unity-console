@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Linq;
 using System;
+using System.Collections.Generic;
 
 namespace UnityConsole
 {
@@ -16,6 +17,8 @@ namespace UnityConsole
         private static bool isVisible;
         private static bool setFocusPending;
         private static string input;
+        private static List<string> inputBuffer = new List<string> { string.Empty };
+        private static int inputBufferIndex = 0;
 
         public static void Show () => isVisible = true;
 
@@ -63,15 +66,35 @@ namespace UnityConsole
                 setFocusPending = false;
             }
 
-            if (Event.current.isKey && (Event.current.keyCode == KeyCode.Return || Event.current.keyCode == KeyCode.KeypadEnter) 
-                && GUI.GetNameOfFocusedControl() == inputControlName)
-            {
-                ExecuteInput();
-                input = string.Empty;
-            }
+            if (GUI.GetNameOfFocusedControl() == inputControlName) HandleGUIInput();
         }
 
         private void OnApplicationQuit () => Hide();
+
+        private void HandleGUIInput ()
+        {
+            if (Event.current.isKey && Event.current.keyCode == KeyCode.UpArrow)
+            {
+                inputBufferIndex--;
+                if (inputBufferIndex < 0) inputBufferIndex = inputBuffer.Count - 1;
+                input = inputBuffer[inputBufferIndex];
+            }
+
+            if (Event.current.isKey && Event.current.keyCode == KeyCode.DownArrow)
+            {
+                inputBufferIndex++;
+                if (inputBufferIndex >= inputBuffer.Count) inputBufferIndex = 0;
+                input = inputBuffer[inputBufferIndex];
+            }
+
+            if (Event.current.isKey && (Event.current.keyCode == KeyCode.Return || Event.current.keyCode == KeyCode.KeypadEnter))
+            {
+                ExecuteInput();
+                inputBuffer.Add(input);
+                inputBufferIndex = 0;
+                input = string.Empty;
+            }
+        }
 
         private void ExecuteInput ()
         {
