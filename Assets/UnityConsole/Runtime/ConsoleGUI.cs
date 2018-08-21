@@ -7,7 +7,14 @@ namespace UnityConsole
 {
     public class ConsoleGUI : MonoBehaviour
     {
+        /// <summary>
+        /// The key to toggle console visibility.
+        /// </summary>
         public static KeyCode ToggleKey { get; set; } = KeyCode.BackQuote;
+        /// <summary>
+        /// Whether to toggle console when multi-(3 or more) touch is detected.
+        /// </summary>
+        public static bool ToggleByMultitouch { get; set; } = true;
 
         private const int height = 25;
         private const int buttonWidth = 100;
@@ -36,11 +43,18 @@ namespace UnityConsole
 
         private void Update ()
         {
-            if (!isVisible && Application.isPlaying && Input.GetKeyUp(ToggleKey))
-            {
-                Toggle();
-                setFocusPending = true;
-            }
+            if (!isVisible && Application.isPlaying)
+                if (Input.GetKeyUp(ToggleKey) || MultitouchDetected())
+                {
+                    Toggle();
+                    setFocusPending = true;
+                }
+        }
+
+        private bool MultitouchDetected ()
+        {
+            if (!ToggleByMultitouch) return false;
+            return Input.touchCount > 2 && Input.touches.Any(touch => touch.phase == TouchPhase.Began);
         }
 
         private void OnGUI ()
