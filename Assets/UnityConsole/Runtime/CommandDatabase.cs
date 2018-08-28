@@ -38,8 +38,8 @@ namespace UnityConsole
                 .Where(assembly => !assembly.IsDynamic)
                 .SelectMany(assembly => assembly.GetExportedTypes())
                 .SelectMany(type => type.GetMethods(BindingFlags.Static | BindingFlags.Public))
-                .Where(method => method.GetCustomAttribute<CommandAttribute>() != null)
-                .ToDictionary(method => method.GetCustomAttribute<CommandAttribute>().Alias ?? method.Name, StringComparer.OrdinalIgnoreCase);
+                .Where(method => method.GetCustomAttribute<ConsoleCommandAttribute>() != null)
+                .ToDictionary(method => method.GetCustomAttribute<ConsoleCommandAttribute>().Alias ?? method.Name, StringComparer.OrdinalIgnoreCase);
         }
         #endif
     }
