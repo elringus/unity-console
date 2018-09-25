@@ -107,6 +107,7 @@ namespace UnityConsole
                 inputBuffer.Add(input);
                 inputBufferIndex = 0;
                 input = string.Empty;
+                Hide();
             }
         }
 
