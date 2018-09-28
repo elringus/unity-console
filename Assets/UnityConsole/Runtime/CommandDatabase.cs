@@ -32,6 +32,7 @@ namespace UnityConsole
 
         #if CONSOLE_ENABLED
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        #endif
         private static void RegisterCommands ()
         {
             methodInfoCache = AppDomain.CurrentDomain.GetAssemblies()
@@ -41,6 +42,5 @@ namespace UnityConsole
                 .Where(method => method.GetCustomAttribute<ConsoleCommandAttribute>() != null)
                 .ToDictionary(method => method.GetCustomAttribute<ConsoleCommandAttribute>().Alias ?? method.Name, StringComparer.OrdinalIgnoreCase);
         }
-        #endif
     }
 }
