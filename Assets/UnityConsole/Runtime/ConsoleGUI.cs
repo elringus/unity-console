@@ -130,6 +130,8 @@ namespace UnityConsole
         {
             if (!AutoInitialize) return;
 
+            CommandDatabase.RegisterCommands();
+
             var hostObject = new GameObject("UnityConsole");
             hostObject.hideFlags = HideFlags.HideAndDontSave;
             DontDestroyOnLoad(hostObject);

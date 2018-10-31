@@ -30,10 +30,7 @@ namespace UnityConsole
             methodInfo.Invoke(null, parameters);
         }
 
-        #if CONSOLE_ENABLED
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        #endif
-        private static void RegisterCommands ()
+        public static void RegisterCommands ()
         {
             methodInfoCache = AppDomain.CurrentDomain.GetAssemblies()
                 .Where(assembly => !assembly.IsDynamic)
