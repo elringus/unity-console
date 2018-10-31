@@ -8,7 +8,7 @@ namespace UnityConsole
     public class ConsoleGUI : MonoBehaviour
     {
         /// <summary>
-        /// Whether to automatically spawn gameobject with the console component when application starts.
+        /// Whether to automatically spawn a hidden persistent gameobject with the console component when application starts.
         /// </summary>
         public static bool AutoInitialize { get; set; } = true;
         /// <summary>
