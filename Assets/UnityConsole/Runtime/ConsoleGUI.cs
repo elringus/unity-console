@@ -8,6 +8,10 @@ namespace UnityConsole
     public class ConsoleGUI : MonoBehaviour
     {
         /// <summary>
+        /// Whether to automatically spawn gameobject with the console component when application starts.
+        /// </summary>
+        public static bool AutoInitialize { get; set; } = true;
+        /// <summary>
         /// The key to toggle console visibility.
         /// </summary>
         public static KeyCode ToggleKey { get; set; } = KeyCode.BackQuote;
@@ -121,15 +125,15 @@ namespace UnityConsole
             else CommandDatabase.ExecuteCommand(command[0], command.ToList().GetRange(1, command.Length - 1).ToArray());
         }
 
-        #if CONSOLE_ENABLED
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Initialize ()
         {
+            if (!AutoInitialize) return;
+
             var hostObject = new GameObject("UnityConsole");
             hostObject.hideFlags = HideFlags.HideAndDontSave;
             DontDestroyOnLoad(hostObject);
             hostObject.AddComponent<ConsoleGUI>();
         }
-        #endif
     }
 }
