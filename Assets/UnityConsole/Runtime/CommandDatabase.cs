@@ -26,7 +26,7 @@ namespace UnityConsole
             }
             var parameters = new object[parametersInfo.Length];
             for (int i = 0; i < args.Length; i++)
-                parameters[i] = Convert.ChangeType(args[i], parametersInfo[i].ParameterType);
+                parameters[i] = Convert.ChangeType(args[i], parametersInfo[i].ParameterType, System.Globalization.CultureInfo.InvariantCulture);
             methodInfo.Invoke(null, parameters);
         }
 
