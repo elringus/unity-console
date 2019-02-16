@@ -119,7 +119,10 @@ namespace UnityConsole
         {
             if (string.IsNullOrWhiteSpace(input)) return;
 
-            var command = input.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+            var preprocessedInput = InputPreprocessor.PreprocessInput(input);
+            if (string.IsNullOrWhiteSpace(preprocessedInput)) return;
+
+            var command = preprocessedInput.Split(separator, StringSplitOptions.RemoveEmptyEntries);
             if (command == null || command.Length == 0) return;
             if (command.Length == 1) CommandDatabase.ExecuteCommand(command[0]);
             else CommandDatabase.ExecuteCommand(command[0], command.ToList().GetRange(1, command.Length - 1).ToArray());
