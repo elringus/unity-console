@@ -14,14 +14,14 @@ namespace UnityConsole
         {
             if (methodInfoCache == null || !methodInfoCache.ContainsKey(methodName))
             {
-                Debug.LogError($"UnityConsole: Command `{methodName}` is not registered in the database.");
+                Debug.LogWarning($"UnityConsole: Command `{methodName}` is not registered in the database.");
                 return;
             }
             var methodInfo = methodInfoCache[methodName];
             var parametersInfo = methodInfo.GetParameters();
             if (parametersInfo.Length != args.Length)
             {
-                Debug.LogError($"UnityConsole: Command `{methodName}` requires {parametersInfo.Length} args, while {args.Length} were provided.");
+                Debug.LogWarning($"UnityConsole: Command `{methodName}` requires {parametersInfo.Length} args, while {args.Length} were provided.");
                 return;
             }
             var parameters = new object[parametersInfo.Length];

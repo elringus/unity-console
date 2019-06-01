@@ -1,4 +1,6 @@
-﻿using System;
+﻿// WARNING: Don't forget to keep compatibility with .NET 3.5 and Unity 2018.1.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -28,6 +30,7 @@ namespace UnityCommon
         private static string IgnoredAssetGUIds { get { return PlayerPrefs.GetString(prefsPrefix + "IgnoredAssetGUIds"); } set { PlayerPrefs.SetString(prefsPrefix + "IgnoredAssetGUIds", value); } }
         private static bool IsAnyPathsIgnored { get { return !string.IsNullOrEmpty(IgnoredAssetGUIds); } }
         private static bool IsReadyToExport { get { return !string.IsNullOrEmpty(OutputPath) && !string.IsNullOrEmpty(OutputFileName); } }
+        private static bool ExportAsUnityPackage { get { return PlayerPrefs.GetInt(prefsPrefix + "ExportAsUnityPackage", 1) == 1; } set { PlayerPrefs.SetInt(prefsPrefix + "ExportAsUnityPackage", value ? 1 : 0); } }
 
         private const string prefsPrefix = "PackageExporter.";
         private const string autoRefreshKey = "kAutoRefresh";
@@ -49,24 +52,50 @@ namespace UnityCommon
             if (!IgnoredAssetGUIds.Contains(guid)) IgnoredAssetGUIds = IgnoredAssetGUIds.Replace(guid, string.Empty);
         }
 
-        private void Awake ()
-        {
-            if (string.IsNullOrEmpty(PackageName))
-                PackageName = Application.productName;
-            if (string.IsNullOrEmpty(LicenseFilePath))
-                LicenseFilePath = Application.dataPath.Replace("Assets", "") + defaultLicenseFileName;
-        }
-
         private void OnEnable ()
         {
-            DeserealizeIgnoredAssets();
+            Initialize();
         }
 
+        private void OnGUI ()
+        {
+            RenderGUI();
+        }
+
+        #if UNITY_2019_1_OR_NEWER
+        [SettingsProvider]
+        internal static SettingsProvider CreateProjectSettingsProvider ()
+        {
+            var provider = new SettingsProvider("Project/Package Exporter", SettingsScope.Project);
+            provider.activateHandler += (a, b) => Initialize();
+            provider.guiHandler += id => RenderGUI();
+            return provider;
+        }
+        #elif UNITY_2018_3_OR_NEWER
+        [SettingsProvider]
+        internal static SettingsProvider CreateProjectSettingsProvider ()
+        {
+            var provider = new SettingsProvider("Project/Package Exporter");
+            provider.activateHandler += (a, b) => Initialize();
+            provider.guiHandler += id => RenderGUI();
+            return provider;
+        }
+        #else
         [MenuItem("Edit/Project Settings/Package Exporter")]
         private static void OpenSettingsWindow ()
         {
             var window = GetWindow<PackageExporter>();
             window.Show();
+        }
+        #endif
+
+        private static void Initialize ()
+        {
+            if (string.IsNullOrEmpty(PackageName))
+                PackageName = Application.productName;
+            if (string.IsNullOrEmpty(LicenseFilePath))
+                LicenseFilePath = Application.dataPath.Replace("Assets", "") + defaultLicenseFileName;
+            DeserealizeIgnoredAssets();
         }
 
         [MenuItem("Assets/+ Export Package", priority = 20)]
@@ -76,7 +105,7 @@ namespace UnityCommon
                 ExportPackageImpl();
         }
 
-        private void OnGUI ()
+        private static void RenderGUI ()
         {
             EditorGUILayout.LabelField("Package Exporter Settings", EditorStyles.boldLabel);
             EditorGUILayout.HelpBox("Settings are stored in editor's PlayerPrefs and won't be exposed in builds or project assets.", MessageType.Info);
@@ -90,6 +119,7 @@ namespace UnityCommon
                 if (GUILayout.Button("Select", EditorStyles.miniButton, GUILayout.Width(65)))
                     OutputPath = EditorUtility.OpenFolderPanel("Output Path", "", "");
             }
+            ExportAsUnityPackage = EditorGUILayout.Toggle("Export As Unity Package", ExportAsUnityPackage);
             EditorGUILayout.Space();
 
             EditorGUI.BeginChangeCheck();
@@ -167,7 +197,7 @@ namespace UnityCommon
             var needToAddLicense = File.Exists(LicenseFilePath);
             if (needToAddLicense)
             {
-                File.Copy(LicenseFilePath, LicenseAssetPath);
+                File.Copy(LicenseFilePath, LicenseAssetPath, true);
                 AssetDatabase.ImportAsset(LicenseAssetPath, ImportAssetOptions.ForceSynchronousImport);
             }
 
@@ -201,7 +231,33 @@ namespace UnityCommon
 
             // Export the package.
             DisplayProgressBar("Writing package file...", .5f);
-            AssetDatabase.ExportPackage(AssetsPath, OutputPath + "/" + OutputFileName + ".unitypackage", ExportPackageOptions.Recurse);
+            if (ExportAsUnityPackage)
+                AssetDatabase.ExportPackage(AssetsPath, OutputPath + "/" + OutputFileName + ".unitypackage", ExportPackageOptions.Recurse);
+            else
+            {
+                try
+                {
+                    var sourcePath = Path.Combine(Application.dataPath, PackageName).Replace("\\", "/");
+                    var destPath = Path.Combine(OutputPath, OutputFileName).Replace("\\", "/"); ;
+                    var sourceDir = new DirectoryInfo(sourcePath);
+
+                    var hiddenFolders = sourceDir.GetDirectories("*", SearchOption.AllDirectories)
+                        .Where(d => (d.Attributes & FileAttributes.Hidden) != 0)
+                        .Select(d => d.FullName).ToList();
+                    var packageFiles = sourceDir.GetFiles("*.*", SearchOption.AllDirectories)
+                        .Where(f => (f.Attributes & FileAttributes.Hidden) == 0 &&
+                        !hiddenFolders.Any(d => f.FullName.StartsWith(d))).ToList();
+
+                    foreach (var packageFile in packageFiles)
+                    {
+                        var sourceFilePath = packageFile.FullName.Replace("\\", "/");
+                        var destFilePath = sourceFilePath.Replace(sourcePath, destPath);
+                        Directory.CreateDirectory(Path.GetDirectoryName(destFilePath));
+                        File.Copy(sourceFilePath, destFilePath, true);
+                    }
+                }
+                catch (Exception e) { Debug.LogError(e.Message); }
+            }
 
             // Restore modified scripts.
             DisplayProgressBar("Restoring modified scripts...", .75f);
