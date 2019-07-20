@@ -1,0 +1,11 @@
+{
+  "name": "com.elringus.unityconsole",
+  "version": "0.1.0",
+  "displayName": "UnityConsole",
+  "description": "Development console for Unity game engine",
+  "unity": "2019.1",
+  "author": {
+    "name": "Elringus",
+    "url": "https://elringus.me"
+  } 
+}
