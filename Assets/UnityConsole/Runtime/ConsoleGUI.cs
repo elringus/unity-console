@@ -54,13 +54,13 @@ namespace UnityConsole
                     setFocusPending = true;
                 }
         }
-        #endif
 
         private bool MultitouchDetected ()
         {
             if (!ToggleByMultitouch) return false;
             return Input.touchCount > 2 && Input.touches.Any(touch => touch.phase == TouchPhase.Began);
         }
+        #endif
 
         private void OnGUI ()
         {
