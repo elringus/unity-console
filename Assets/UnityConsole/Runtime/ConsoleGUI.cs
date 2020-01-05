@@ -21,7 +21,6 @@ namespace UnityConsole
         public static bool ToggleByMultitouch { get; set; } = true;
 
         private const int height = 25;
-        private const int buttonWidth = 100;
         private const string inputControlName = "input";
         private static char[] separator = new[] { ' ' };
         private static GUIStyle style;
@@ -45,6 +44,7 @@ namespace UnityConsole
             };
         }
 
+        #if ENABLE_LEGACY_INPUT_MANAGER
         private void Update ()
         {
             if (!isVisible && Application.isPlaying)
@@ -54,6 +54,7 @@ namespace UnityConsole
                     setFocusPending = true;
                 }
         }
+        #endif
 
         private bool MultitouchDetected ()
         {
