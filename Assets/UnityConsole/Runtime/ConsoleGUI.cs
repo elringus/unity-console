@@ -8,10 +8,6 @@ namespace UnityConsole
     public class ConsoleGUI : MonoBehaviour
     {
         /// <summary>
-        /// Whether to automatically spawn a hidden persistent gameobject with the console component when application starts.
-        /// </summary>
-        public static bool AutoInitialize { get; set; } = true;
-        /// <summary>
         /// The key to toggle console visibility.
         /// </summary>
         public static KeyCode ToggleKey { get; set; } = KeyCode.BackQuote;
@@ -29,6 +25,27 @@ namespace UnityConsole
         private static string input;
         private static List<string> inputBuffer = new List<string> { string.Empty };
         private static int inputBufferIndex = 0;
+        private static GameObject hostObject;
+
+        public static void Initialize ()
+        {
+            if (hostObject) return;
+
+            CommandDatabase.RegisterCommands();
+
+            hostObject = new GameObject("UnityConsole");
+            hostObject.hideFlags = HideFlags.HideAndDontSave;
+            DontDestroyOnLoad(hostObject);
+            hostObject.AddComponent<ConsoleGUI>();
+        }
+
+        public static void Destroy ()
+        {
+            if (!hostObject) return;
+
+            if (Application.isPlaying) Destroy(hostObject);
+            else DestroyImmediate(hostObject);
+        }
 
         public static void Show () => isVisible = true;
 
@@ -88,7 +105,11 @@ namespace UnityConsole
             if (GUI.GetNameOfFocusedControl() == inputControlName) HandleGUIInput();
         }
 
-        private void OnApplicationQuit () => Hide();
+        private void OnApplicationQuit ()
+        {
+            Hide();
+            Destroy();
+        }
 
         private void HandleGUIInput ()
         {
@@ -127,19 +148,6 @@ namespace UnityConsole
             if (command == null || command.Length == 0) return;
             if (command.Length == 1) CommandDatabase.ExecuteCommand(command[0]);
             else CommandDatabase.ExecuteCommand(command[0], command.ToList().GetRange(1, command.Length - 1).ToArray());
-        }
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        private static void Initialize ()
-        {
-            if (!AutoInitialize) return;
-
-            CommandDatabase.RegisterCommands();
-
-            var hostObject = new GameObject("UnityConsole");
-            hostObject.hideFlags = HideFlags.HideAndDontSave;
-            DontDestroyOnLoad(hostObject);
-            hostObject.AddComponent<ConsoleGUI>();
         }
     }
 }
