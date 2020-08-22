@@ -1,12 +1,19 @@
-﻿using UnityEngine;
-using System.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 
 namespace UnityConsole
 {
     public class ConsoleGUI : MonoBehaviour
     {
+        // To prevent garbage when the console is hidden.
+        private class OnGUIProxy : MonoBehaviour 
+        {
+            public Action OnGUIDelegate;
+            private void OnGUI () => OnGUIDelegate();
+        }
+
         /// <summary>
         /// The key to toggle console visibility.
         /// </summary>
@@ -18,65 +25,65 @@ namespace UnityConsole
 
         private const int height = 25;
         private const string inputControlName = "input";
-        private static readonly char[] separator = new[] { ' ' };
-        private static readonly List<string> inputBuffer = new List<string>();
-        private static GUIStyle style;
-        private static bool visible;
-        private static bool setFocusPending;
-        private static string input;
-        private static int inputBufferIndex = 0;
-        private static GameObject hostObject;
+
+        private static ConsoleGUI instance;
+
+        private readonly char[] separator = new[] { ' ' };
+        private readonly List<string> inputBuffer = new List<string>();
+        private OnGUIProxy guiProxy;
+        private GUIStyle style;
+        private bool setFocusPending;
+        private string input;
+        private int inputBufferIndex = 0;
 
         public static void Initialize ()
         {
-            if (hostObject) return;
+            if (instance) return;
 
             CommandDatabase.RegisterCommands();
 
-            hostObject = new GameObject("UnityConsole");
+            var hostObject = new GameObject("UnityConsole");
             hostObject.hideFlags = HideFlags.HideAndDontSave;
             DontDestroyOnLoad(hostObject);
-            hostObject.AddComponent<ConsoleGUI>();
+
+            instance = hostObject.AddComponent<ConsoleGUI>();
+            instance.style = new GUIStyle {
+                normal = new GUIStyleState { background = Texture2D.whiteTexture, textColor = Color.white },
+                contentOffset = new Vector2(5, 5),
+            };
+
+            instance.guiProxy = hostObject.AddComponent<OnGUIProxy>();
+            instance.guiProxy.OnGUIDelegate = instance.DrawGUI;
+            instance.guiProxy.enabled = false;
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         public static void Destroy ()
         {
-            if (!hostObject) return;
+            if (!instance) return;
 
-            visible = false;
-            setFocusPending = false;
-            input = string.Empty;
-            inputBuffer.Clear();
-            inputBufferIndex = 0;
-
-            if (Application.isPlaying) Destroy(hostObject);
-            else DestroyImmediate(hostObject);
+            if (Application.isPlaying) Destroy(instance.gameObject);
+            else DestroyImmediate(instance.gameObject);
         }
 
-        public static void Show () => visible = true;
+        public static void Show () => instance.guiProxy.enabled = true;
 
-        public static void Hide () => visible = false;
+        public static void Hide () => instance.guiProxy.enabled = false;
 
-        public static void Toggle () => visible = !visible;
+        public static void Toggle () => instance.guiProxy.enabled = !instance.guiProxy.enabled;
 
-        private void Awake ()
-        {
-            style = new GUIStyle {
-                normal = new GUIStyleState { background = Texture2D.whiteTexture, textColor = Color.white },
-                contentOffset = new Vector2(5, 5),
-            };
-        }
+        private void OnApplicationQuit () => Destroy();
 
         #if ENABLE_LEGACY_INPUT_MANAGER
         private void Update ()
         {
-            if (!visible && Application.isPlaying)
-                if (Input.GetKeyUp(ToggleKey) || MultitouchDetected())
-                {
-                    Toggle();
-                    setFocusPending = true;
-                }
+            if (!Application.isPlaying) return;
+
+            if (Input.GetKeyUp(ToggleKey) || MultitouchDetected())
+            {
+                Toggle();
+                setFocusPending = true;
+            }
         }
 
         private bool MultitouchDetected ()
@@ -86,10 +93,8 @@ namespace UnityConsole
         }
         #endif
 
-        private void OnGUI ()
+        private void DrawGUI ()
         {
-            if (!visible) return;
-
             if (Event.current.isKey && Event.current.keyCode == ToggleKey)
             {
                 Hide();
@@ -110,12 +115,6 @@ namespace UnityConsole
             }
 
             if (GUI.GetNameOfFocusedControl() == inputControlName) HandleGUIInput();
-        }
-
-        private void OnApplicationQuit ()
-        {
-            Hide();
-            Destroy();
         }
 
         private void HandleGUIInput ()
