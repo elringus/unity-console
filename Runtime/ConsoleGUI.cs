@@ -18,12 +18,12 @@ namespace UnityConsole
 
         private const int height = 25;
         private const string inputControlName = "input";
-        private static char[] separator = new[] { ' ' };
+        private static readonly char[] separator = new[] { ' ' };
+        private static readonly List<string> inputBuffer = new List<string>();
         private static GUIStyle style;
-        private static bool isVisible;
+        private static bool visible;
         private static bool setFocusPending;
         private static string input;
-        private static List<string> inputBuffer = new List<string> { string.Empty };
         private static int inputBufferIndex = 0;
         private static GameObject hostObject;
 
@@ -39,19 +39,26 @@ namespace UnityConsole
             hostObject.AddComponent<ConsoleGUI>();
         }
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         public static void Destroy ()
         {
             if (!hostObject) return;
+
+            visible = false;
+            setFocusPending = false;
+            input = string.Empty;
+            inputBuffer.Clear();
+            inputBufferIndex = 0;
 
             if (Application.isPlaying) Destroy(hostObject);
             else DestroyImmediate(hostObject);
         }
 
-        public static void Show () => isVisible = true;
+        public static void Show () => visible = true;
 
-        public static void Hide () => isVisible = false;
+        public static void Hide () => visible = false;
 
-        public static void Toggle () => isVisible = !isVisible;
+        public static void Toggle () => visible = !visible;
 
         private void Awake ()
         {
@@ -64,7 +71,7 @@ namespace UnityConsole
         #if ENABLE_LEGACY_INPUT_MANAGER
         private void Update ()
         {
-            if (!isVisible && Application.isPlaying)
+            if (!visible && Application.isPlaying)
                 if (Input.GetKeyUp(ToggleKey) || MultitouchDetected())
                 {
                     Toggle();
@@ -81,7 +88,7 @@ namespace UnityConsole
 
         private void OnGUI ()
         {
-            if (!isVisible) return;
+            if (!visible) return;
 
             if (Event.current.isKey && Event.current.keyCode == ToggleKey)
             {

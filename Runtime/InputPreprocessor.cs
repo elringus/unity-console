@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace UnityConsole
 {
@@ -46,5 +47,11 @@ namespace UnityConsole
         {
             return preprocessors.Remove(preprocessor);
         }
+
+        /// <summary>
+        /// Removes all the added preprocessors from the preprocessors list.
+        /// </summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        public static void ResetPreprocessor () => preprocessors.Clear();
     }
 }
