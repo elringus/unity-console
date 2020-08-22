@@ -21,7 +21,7 @@ Register commands by adding  `ConsoleCommand` attribute to static C# methods. Th
 public static void PrintHelloWorld () => Debug.Log("Hello World!");
 
 [UnityConsole.ConsoleCommand]
-public static void PrintHelloWorld (int arg1, int arg2) => Debug.Log(arg1 + arg2);
+public static void Add (int arg1, int arg2) => Debug.Log(arg1 + arg2);
 ```
 
 Enable the console at runtime with:
