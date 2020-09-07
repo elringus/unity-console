@@ -119,14 +119,14 @@ namespace UnityConsole
 
         private void HandleGUIInput ()
         {
-            if (Event.current.isKey && Event.current.keyCode == KeyCode.UpArrow)
+            if (inputBuffer.Count > 0 && Event.current.isKey && Event.current.keyCode == KeyCode.UpArrow)
             {
                 inputBufferIndex--;
                 if (inputBufferIndex < 0) inputBufferIndex = inputBuffer.Count - 1;
                 input = inputBuffer[inputBufferIndex];
             }
 
-            if (Event.current.isKey && Event.current.keyCode == KeyCode.DownArrow)
+            if (inputBuffer.Count > 0 && Event.current.isKey && Event.current.keyCode == KeyCode.DownArrow)
             {
                 inputBufferIndex++;
                 if (inputBufferIndex >= inputBuffer.Count) inputBufferIndex = 0;
