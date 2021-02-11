@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 
 namespace UnityConsole
@@ -8,7 +9,7 @@ namespace UnityConsole
     public class ConsoleGUI : MonoBehaviour
     {
         // To prevent garbage when the console is hidden.
-        private class OnGUIProxy : MonoBehaviour 
+        private class OnGUIProxy : MonoBehaviour
         {
             public Action OnGUIDelegate;
             private void OnGUI () => OnGUIDelegate();
@@ -28,7 +29,7 @@ namespace UnityConsole
 
         private static ConsoleGUI instance;
 
-        private readonly char[] separator = new[] { ' ' };
+        private readonly char[] separator = { ' ' };
         private readonly List<string> inputBuffer = new List<string>();
         private OnGUIProxy guiProxy;
         private GUIStyle style;
@@ -36,11 +37,11 @@ namespace UnityConsole
         private string input;
         private int inputBufferIndex = 0;
 
-        public static void Initialize ()
+        public static void Initialize (Dictionary<string, MethodInfo> commands = null)
         {
             if (instance) return;
 
-            CommandDatabase.RegisterCommands();
+            CommandDatabase.RegisterCommands(commands);
 
             var hostObject = new GameObject("UnityConsole");
             hostObject.hideFlags = HideFlags.HideAndDontSave;
@@ -151,7 +152,7 @@ namespace UnityConsole
             if (string.IsNullOrWhiteSpace(preprocessedInput)) return;
 
             var command = preprocessedInput.Split(separator, StringSplitOptions.RemoveEmptyEntries);
-            if (command == null || command.Length == 0) return;
+            if (command.Length == 0) return;
             if (command.Length == 1) CommandDatabase.ExecuteCommand(command[0]);
             else CommandDatabase.ExecuteCommand(command[0], command.ToList().GetRange(1, command.Length - 1).ToArray());
         }
