@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -30,9 +30,9 @@ namespace UnityConsole
             methodInfo.Invoke(null, parameters);
         }
 
-        public static void RegisterCommands ()
+        internal static void RegisterCommands (Dictionary<string, MethodInfo> commands = null)
         {
-            methodInfoCache = AppDomain.CurrentDomain.GetAssemblies()
+            methodInfoCache = commands ?? AppDomain.CurrentDomain.GetAssemblies()
                 .Where(assembly => !assembly.IsDynamic)
                 .SelectMany(assembly => assembly.GetExportedTypes())
                 .SelectMany(type => type.GetMethods(BindingFlags.Static | BindingFlags.Public))
