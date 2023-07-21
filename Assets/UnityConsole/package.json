@@ -1,6 +1,6 @@
 {
   "name": "com.elringus.unityconsole",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "displayName": "UnityConsole",
   "description": "Development console for Unity game engine",
   "unity": "2019.4",

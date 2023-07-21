@@ -1,11 +1,10 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using UnityConsole;
 using UnityEngine;
 
 public class TestInitialize : MonoBehaviour
 {
     private void Awake ()
     {
-        UnityConsole.ConsoleGUI.Initialize();
+        ConsoleGUI.Initialize();
     }
 }
