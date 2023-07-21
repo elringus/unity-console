@@ -23,19 +23,27 @@ namespace UnityConsole
         /// Whether to toggle console when multi-(3 or more) touch is detected.
         /// </summary>
         public static bool ToggleByMultitouch { get; set; } = true;
+        /// <summary>
+        /// Whether to scale the console UI based on screen resolution.
+        /// </summary>
+        public static bool ScaleByResolution { get; set; } = true;
+        /// <summary>
+        /// Color of the console underlay.
+        /// </summary>
+        public static Color BackgroundColor { get; set; } = new Color(0, 0, 0, .65f);
 
-        private const int height = 25;
         private const string inputControlName = "input";
-
         private static ConsoleGUI instance;
 
         private readonly char[] separator = { ' ' };
         private readonly List<string> inputBuffer = new List<string>();
         private OnGUIProxy guiProxy;
         private GUIStyle style;
+        private Vector2 scale;
+        private Rect consoleRect, execButtonRect, closeButtonRect;
         private bool setFocusPending;
         private string input;
-        private int inputBufferIndex = 0;
+        private int inputBufferIndex;
 
         public static void Initialize (Dictionary<string, MethodInfo> commands = null)
         {
@@ -48,9 +56,14 @@ namespace UnityConsole
             DontDestroyOnLoad(hostObject);
 
             instance = hostObject.AddComponent<ConsoleGUI>();
+            instance.scale = ScaleByResolution ? new Vector2(Mathf.Max(Screen.width / 1920f, 1), Mathf.Max(Screen.height / 1080f, 1)) : Vector2.one;
+            instance.consoleRect = new Rect(0, 0, Screen.width - 125 * instance.scale.x, 25 * instance.scale.y);
+            instance.execButtonRect = new Rect(Screen.width - 125 * instance.scale.x, 0, 75 * instance.scale.x, 25 * instance.scale.y);
+            instance.closeButtonRect = new Rect(Screen.width - 050 * instance.scale.x, 0, 50 * instance.scale.x, 25 * instance.scale.y);
             instance.style = new GUIStyle {
                 normal = new GUIStyleState { background = Texture2D.whiteTexture, textColor = Color.white },
-                contentOffset = new Vector2(5, 5),
+                contentOffset = new Vector2(5, 5) * instance.scale,
+                fontSize = Mathf.FloorToInt(14 * (instance.scale.x + instance.scale.y) / 2)
             };
 
             instance.guiProxy = hostObject.AddComponent<OnGUIProxy>();
@@ -102,12 +115,11 @@ namespace UnityConsole
                 return;
             }
 
-            GUI.backgroundColor = new Color(0, 0, 0, .65f);
-
+            GUI.backgroundColor = BackgroundColor;
             GUI.SetNextControlName(inputControlName);
-            input = GUI.TextField(new Rect(0, 0, Screen.width - 125, height), input, style);
-            if (GUI.Button(new Rect(Screen.width - 125, 0, 75, height), "EXECUTE", style)) ExecuteInput();
-            if (GUI.Button(new Rect(Screen.width - 050, 0, 50, height), "HIDE", style)) Hide();
+            input = GUI.TextField(consoleRect, input, style);
+            if (GUI.Button(execButtonRect, "EXECUTE", style)) ExecuteInput();
+            if (GUI.Button(closeButtonRect, "HIDE", style)) Hide();
 
             if (setFocusPending)
             {
