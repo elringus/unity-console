@@ -10,6 +10,8 @@ Use [UPM](https://docs.unity3d.com/Manual/upm-ui-giturl.html) to install the pac
 
 ![](https://i.gyazo.com/b54e9daa9a483d9bf7f74f0e94b2d38a.gif)
 
+Alternatively, manually copy `Assets/UnityConsole` folder from the repository to the Unity project.
+
 Minimum supported Unity version: 2019.4.
 
 ## How to Use
