@@ -33,7 +33,7 @@ namespace UnityConsole
         /// Adds the provided delegate as the input preprocessor.
         /// The delegate will be invoked before processing the console input.
         /// The only argument is the console input string. The return is the result of the preprocessing.
-        /// When null is retured, the input won't be processed further.
+        /// When null is returned, the input won't be processed further.
         /// </summary>
         public static bool AddPreprocessor (Func<string, string> preprocessor)
         {
