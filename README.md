@@ -4,13 +4,13 @@ Use [UPM](https://docs.unity3d.com/Manual/upm-ui-giturl.html) to install the pac
 
 ![](https://i.gyazo.com/b54e9daa9a483d9bf7f74f0e94b2d38a.gif)
 
-Minimum supported Unity version: 2019.1
+Minimum supported Unity version: 2019.4.
 
 ## Description
 
 Allows executing static C# methods via an on-demand console IMGUI.
 
-![](https://i.gyazo.com/29af2cc60e635317c46a2a0ca7fb59c3.gif)
+![](https://github.com/Elringus/UnityConsole/blob/feat/vnext/preview.gif)
 
 ## How to Use
 
@@ -32,7 +32,7 @@ UnityConsole.ConsoleGUI.Initialize()
 
 Toggle console GUI with `~` key. The key can be overridden via `ConsoleGUI.ToggleKey` public static property. It's also possible to toggle console with a multi-(3 or more) touch on touch screen devices.
 
-In the console, type either method name or alias of a registered command and press `Enter` key to invoke the method. Method arguments are separated with a single whitespace.
+In the console, type either method name or alias of a registered command and press `Enter` key to invoke the method. Method arguments are separated with a single whitespace. To specify string arguments with whitespace, wrap them in double or single quotes.
 
 Use `Up` and `Down` to navigate over previously executed commands. 
 
