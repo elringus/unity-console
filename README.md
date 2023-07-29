@@ -36,7 +36,7 @@ Toggle console GUI with `~` key. The key can be overridden via `ConsoleGUI.Toggl
 
 In the console, type either method name or alias of a registered command and press `Enter` key to invoke the method. Method arguments are separated with a single whitespace. To specify string arguments with whitespace, wrap them in double or single quotes.
 
-Use `Up` and `Down` to navigate over previously executed commands. 
+Use `Up` and `Down` to navigate over previously executed commands.
 
 To disable the console at runtime:
 
@@ -44,7 +44,7 @@ To disable the console at runtime:
 UnityConsole.ConsoleGUI.Destroy()
 ```
 
-## Preprocessors 
+## Preprocessors
 
 It's possible to inject delegates to modify the console input before it's send for execution, eg:
 
