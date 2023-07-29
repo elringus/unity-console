@@ -2,7 +2,7 @@
 
 Allows executing static C# methods via an on-demand console IMGUI.
 
-![](https://github.com/Elringus/UnityConsole/blob/feat/vnext/preview.gif)
+![](https://github.com/Elringus/UnityConsole/blob/master/preview.gif)
 
 ## Installation
 
