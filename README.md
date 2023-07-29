@@ -1,3 +1,9 @@
+## Description
+
+Allows executing static C# methods via an on-demand console IMGUI.
+
+![](https://github.com/Elringus/UnityConsole/blob/feat/vnext/preview.gif)
+
 ## Installation
 
 Use [UPM](https://docs.unity3d.com/Manual/upm-ui-giturl.html) to install the package via the following Git URL: `https://github.com/Elringus/UnityConsole.git#package`.
@@ -5,12 +11,6 @@ Use [UPM](https://docs.unity3d.com/Manual/upm-ui-giturl.html) to install the pac
 ![](https://i.gyazo.com/b54e9daa9a483d9bf7f74f0e94b2d38a.gif)
 
 Minimum supported Unity version: 2019.4.
-
-## Description
-
-Allows executing static C# methods via an on-demand console IMGUI.
-
-![](https://github.com/Elringus/UnityConsole/blob/feat/vnext/preview.gif)
 
 ## How to Use
 
