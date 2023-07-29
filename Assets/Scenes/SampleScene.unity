@@ -267,6 +267,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dcb509efa2c3ba4793ffba7e11a8190, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Font: {fileID: 12800000, guid: 49b15295f3c4580469af0d2d66368bc1, type: 3}
+  BackgroundColor: {r: 0, g: 0, b: 0, a: 0.65}
 --- !u!4 &2142466410
 Transform:
   m_ObjectHideFlags: 0
