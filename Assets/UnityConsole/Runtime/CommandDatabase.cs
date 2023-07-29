@@ -8,6 +8,8 @@ namespace UnityConsole
 {
     internal static class CommandDatabase
     {
+        public static IReadOnlyDictionary<string, MethodInfo> Registered => methodInfoCache;
+
         private static Dictionary<string, MethodInfo> methodInfoCache;
 
         public static void ExecuteCommand (string methodName, params string[] args)

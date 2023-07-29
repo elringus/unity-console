@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace UnityConsole
@@ -28,22 +29,31 @@ namespace UnityConsole
         /// </summary>
         public static bool ScaleByResolution { get; set; } = true;
         /// <summary>
+        /// The font to use throughout the console GUI.
+        /// </summary>
+        public static Font Font { get; set; }
+        /// <summary>
         /// Color of the console underlay.
         /// </summary>
         public static Color BackgroundColor { get; set; } = new Color(0, 0, 0, .65f);
+        /// <summary>
+        /// Whether to show auto-complete list of available commands when typing in console.
+        /// </summary>
+        public static bool ShowCompleteList { get; set; } = true;
+
+        internal static Vector2 Size { get; private set; }
+        internal static Vector2 Scale { get; private set; }
+        internal static GUIStyle Style { get; private set; }
 
         private const string inputControlName = "input";
         private static ConsoleGUI instance;
-
-        private readonly char[] separator = { ' ' };
-        private readonly List<string> inputBuffer = new List<string>();
-        private OnGUIProxy guiProxy;
-        private GUIStyle style;
-        private Vector2 scale;
-        private Rect consoleRect, execButtonRect, closeButtonRect;
-        private bool setFocusPending;
-        private string input;
-        private int inputBufferIndex;
+        private static readonly Regex regex = new Regex("'(.+?)'|\"(.+?)\"|([^ ]+)", RegexOptions.Compiled);
+        private static readonly List<string> inputBuffer = new List<string>();
+        private static OnGUIProxy guiProxy;
+        private static Rect consoleRect, execButtonRect, closeButtonRect;
+        private static bool setFocusPending;
+        private static string input;
+        private static int inputBufferIndex;
 
         public static void Initialize (Dictionary<string, MethodInfo> commands = null)
         {
@@ -56,36 +66,35 @@ namespace UnityConsole
             DontDestroyOnLoad(hostObject);
 
             instance = hostObject.AddComponent<ConsoleGUI>();
-            instance.scale = ScaleByResolution ? new Vector2(Mathf.Max(Screen.width / 1920f, 1), Mathf.Max(Screen.height / 1080f, 1)) : Vector2.one;
-            instance.consoleRect = new Rect(0, 0, Screen.width - 125 * instance.scale.x, 25 * instance.scale.y);
-            instance.execButtonRect = new Rect(Screen.width - 125 * instance.scale.x, 0, 75 * instance.scale.x, 25 * instance.scale.y);
-            instance.closeButtonRect = new Rect(Screen.width - 050 * instance.scale.x, 0, 50 * instance.scale.x, 25 * instance.scale.y);
-            instance.style = new GUIStyle {
+            Scale = ScaleByResolution ? new Vector2(Mathf.Max(Screen.width / 1920f, 1), Mathf.Max(Screen.height / 1080f, 1)) : Vector2.one;
+            Size = new Vector2(Screen.width - 125 * Scale.x, 25 * Scale.y);
+            consoleRect = new Rect(0, 0, Size.x, Size.y);
+            execButtonRect = new Rect(Size.x, 0, 75 * Scale.x, Size.y);
+            closeButtonRect = new Rect(Screen.width - 050 * Scale.x, 0, 50 * Scale.x, Size.y);
+            Style = new GUIStyle {
+                richText = true,
                 normal = new GUIStyleState { background = Texture2D.whiteTexture, textColor = Color.white },
-                contentOffset = new Vector2(5, 5) * instance.scale,
-                fontSize = Mathf.FloorToInt(14 * (instance.scale.x + instance.scale.y) / 2)
+                contentOffset = new Vector2(5, 5) * Scale,
+                fontSize = Mathf.FloorToInt(14 * (Scale.x + Scale.y) / 2),
+                font = Font
             };
 
-            instance.guiProxy = hostObject.AddComponent<OnGUIProxy>();
-            instance.guiProxy.OnGUIDelegate = instance.DrawGUI;
-            instance.guiProxy.enabled = false;
+            guiProxy = hostObject.AddComponent<OnGUIProxy>();
+            guiProxy.OnGUIDelegate = instance.DrawGUI;
+            guiProxy.enabled = false;
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         public static void Destroy ()
         {
             if (!instance) return;
-
             if (Application.isPlaying) Destroy(instance.gameObject);
             else DestroyImmediate(instance.gameObject);
         }
 
-        public static void Show () => instance.guiProxy.enabled = true;
-
-        public static void Hide () => instance.guiProxy.enabled = false;
-
-        public static void Toggle () => instance.guiProxy.enabled = !instance.guiProxy.enabled;
-
+        public static void Show () => guiProxy.enabled = true;
+        public static void Hide () => guiProxy.enabled = false;
+        public static void Toggle () => guiProxy.enabled = !guiProxy.enabled;
         private void OnApplicationQuit () => Destroy();
 
         #if ENABLE_LEGACY_INPUT_MANAGER
@@ -117,9 +126,10 @@ namespace UnityConsole
 
             GUI.backgroundColor = BackgroundColor;
             GUI.SetNextControlName(inputControlName);
-            input = GUI.TextField(consoleRect, input, style);
-            if (GUI.Button(execButtonRect, "EXECUTE", style)) ExecuteInput();
-            if (GUI.Button(closeButtonRect, "HIDE", style)) Hide();
+            input = GUI.TextField(consoleRect, input, Style);
+            if (GUI.Button(execButtonRect, "EXECUTE", Style)) ExecuteInput();
+            if (GUI.Button(closeButtonRect, "HIDE", Style)) Hide();
+            if (ShowCompleteList) CompleteGUI.Draw(ref input);
 
             if (setFocusPending)
             {
@@ -156,17 +166,25 @@ namespace UnityConsole
             }
         }
 
-        private void ExecuteInput ()
+        private static void ExecuteInput ()
         {
             if (string.IsNullOrWhiteSpace(input)) return;
 
             var preprocessedInput = InputPreprocessor.PreprocessInput(input);
             if (string.IsNullOrWhiteSpace(preprocessedInput)) return;
 
-            var command = preprocessedInput.Split(separator, StringSplitOptions.RemoveEmptyEntries);
-            if (command.Length == 0) return;
-            if (command.Length == 1) CommandDatabase.ExecuteCommand(command[0]);
-            else CommandDatabase.ExecuteCommand(command[0], command.ToList().GetRange(1, command.Length - 1).ToArray());
+            var parts = new List<string>();
+            foreach (Match match in regex.Matches(preprocessedInput))
+                for (int i = 1; i < match.Groups.Count; i++)
+                    if (match.Groups[i].Success)
+                    {
+                        parts.Add(match.Groups[i].Value);
+                        break;
+                    }
+
+            if (parts.Count == 0) return;
+            if (parts.Count == 1) CommandDatabase.ExecuteCommand(parts[0]);
+            else CommandDatabase.ExecuteCommand(parts[0], parts.GetRange(1, parts.Count - 1).ToArray());
         }
     }
 }
