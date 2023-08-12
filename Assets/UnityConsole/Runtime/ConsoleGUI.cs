@@ -92,7 +92,12 @@ namespace UnityConsole
             else DestroyImmediate(instance.gameObject);
         }
 
-        public static void Show () => guiProxy.enabled = true;
+        public static void Show ()
+        {
+            guiProxy.enabled = true;
+            setFocusPending = true;
+        }
+
         public static void Hide () => guiProxy.enabled = false;
         public static void Toggle () => guiProxy.enabled = !guiProxy.enabled;
         private void OnApplicationQuit () => Destroy();
@@ -101,18 +106,8 @@ namespace UnityConsole
         private void Update ()
         {
             if (!Application.isPlaying) return;
-
-            if (Input.GetKeyUp(ToggleKey) || MultitouchDetected())
-            {
+            if (Input.GetKeyUp(ToggleKey) || (ToggleByMultitouch && Input.touchCount > 2 && Input.touches.Any(touch => touch.phase == TouchPhase.Began)))
                 Toggle();
-                setFocusPending = true;
-            }
-        }
-
-        private bool MultitouchDetected ()
-        {
-            if (!ToggleByMultitouch) return false;
-            return Input.touchCount > 2 && Input.touches.Any(touch => touch.phase == TouchPhase.Began);
         }
         #endif
 
