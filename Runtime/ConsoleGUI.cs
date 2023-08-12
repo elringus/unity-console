@@ -20,12 +20,6 @@ namespace UnityConsole
         /// The key to toggle console visibility.
         /// </summary>
         public static KeyCode ToggleKey { get; set; } = KeyCode.BackQuote;
-        #if ENABLE_INPUT_SYSTEM && INPUT_SYSTEM_AVAILABLE
-        /// <summary>
-        /// The action (new input system) to toggle console visibility.
-        /// </summary>
-        public static UnityEngine.InputSystem.InputAction ToggleAction { get; set; }
-        #endif
         /// <summary>
         /// Whether to toggle console when multi-(3 or more) touch is detected.
         /// </summary>
@@ -85,8 +79,6 @@ namespace UnityConsole
                 font = Font
             };
 
-            SetupNewInput();
-
             guiProxy = hostObject.AddComponent<OnGUIProxy>();
             guiProxy.OnGUIDelegate = instance.DrawGUI;
             guiProxy.enabled = false;
@@ -104,17 +96,6 @@ namespace UnityConsole
         {
             guiProxy.enabled = true;
             setFocusPending = true;
-        }
-
-        private static void SetupNewInput ()
-        {
-            #if ENABLE_INPUT_SYSTEM && INPUT_SYSTEM_AVAILABLE
-            if (ToggleAction == null) return;
-            ToggleAction.Enable();
-            ToggleAction.performed -= HandleToggle;
-            ToggleAction.performed += HandleToggle;
-            void HandleToggle (UnityEngine.InputSystem.InputAction.CallbackContext _) => Toggle();
-            #endif
         }
 
         public static void Hide () => guiProxy.enabled = false;
