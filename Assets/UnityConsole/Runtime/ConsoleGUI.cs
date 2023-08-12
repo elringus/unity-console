@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using UnityEngine;
@@ -106,8 +105,17 @@ namespace UnityConsole
         private void Update ()
         {
             if (!Application.isPlaying) return;
-            if (Input.GetKeyUp(ToggleKey) || (ToggleByMultitouch && Input.touchCount > 2 && Input.touches.Any(touch => touch.phase == TouchPhase.Began)))
+            if (Input.GetKeyUp(ToggleKey) || MultitouchActive())
                 Toggle();
+
+            bool MultitouchActive ()
+            {
+                if (Input.touchCount <= 2) return false;
+                foreach (var touch in Input.touches)
+                    if (touch.phase == TouchPhase.Began)
+                        return true;
+                return false;
+            }
         }
         #endif
 
