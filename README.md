@@ -2,11 +2,11 @@
 
 Allows executing static C# methods via an on-demand console IMGUI.
 
-![](https://github.com/Elringus/UnityConsole/blob/master/preview.gif)
+![](https://github.com/elringus/unity-console/blob/main/preview.gif)
 
 ## Installation
 
-Use [UPM](https://docs.unity3d.com/Manual/upm-ui-giturl.html) to install the package via the following Git URL: `https://github.com/Elringus/UnityConsole.git#package`.
+Use [UPM](https://docs.unity3d.com/Manual/upm-ui-giturl.html) to install the package via the following Git URL: `https://github.com/elringus/unity-console.git#package`.
 
 ![](https://i.gyazo.com/b54e9daa9a483d9bf7f74f0e94b2d38a.gif)
 
