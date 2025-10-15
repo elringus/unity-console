@@ -77,3 +77,10 @@ public class TestPreprocessor : MonoBehaviour
 ```
 
 — will intercept commands starting with `@` and instead log the input. Notice, that when a preprocessor delegate returns `null` it will stop the default console behaviour.
+
+---
+
+<a href="https://naninovel.com">
+  <p align="center">The plugin is used in <strong>Naninovel: Visual Novel, Dialogue & Cutscene Storytelling Engine</strong>. Check it out!</p>
+  <p align="center"><img alt="naninovel banner" src="https://raw.githubusercontent.com/elringus/cdn/main/naninovel-banner-wide.png"></p>
+</a>
